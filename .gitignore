@@ -6,3 +6,6 @@
 
 # Development-mode Eggs
 tx_redis_poller.egg-info
+
+# Distribution related stuff
+dist
