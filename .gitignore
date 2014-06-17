@@ -1,0 +1,8 @@
+# Vim files
+*.swp
+
+# Compiled Python
+*.pyc
+
+# Development-mode Eggs
+tx_redis_poller.egg-info
