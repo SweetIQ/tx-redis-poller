@@ -30,19 +30,26 @@ class RedisPoller():
         if redis is not None:
             self.redis = redis
         elif redis_config is not None:
-            self._connect(redis_config)
+            self.redis = None
+            self.redis_config = redis_config
+        else:
+            self.redis = None
+            self.redis_config = ("localhost", 6379)
 
         self.queue_name = queue_name
         self.prefetch_count = prefetch_count
         self.poll_delay = poll_delay
 
     @defer.inlineCallbacks
-    def _connect(self, redis_config):
-        client = protocol.clientCreator(reactor, RedisClient)
-        self.redis = yield client.connectTcp(*redis_config)
+    def _connect(self):
+        client = protocol.ClientCreator(reactor, RedisClient)
+        self.redis = yield client.connectTCP(*self.redis_config)
 
     @defer.inlineCallbacks
     def start(self):
+        if self.redis is None:
+            yield self._connect()
+
         yield self._load_lua_scripts()
         self._poll()
 
@@ -74,3 +81,8 @@ class RedisPoller():
         ''' Trigger a poll on the queues we're listening on. '''
         yield self._poll_helper()
         reactor.callLater(self.poll_delay, self._poll)
+
+    def on_message(self):
+        ''' A dummy message handler for when we receive a message. To be
+        overridden by child classes. '''
+        pass
